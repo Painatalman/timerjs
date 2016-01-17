@@ -72,7 +72,8 @@ function Timer(options) {
   }
 
   function getSecondsFromMilliseconds(time) {
-    return Math.floor(time / (1000));
+
+    return Math.floor(time / 1000);
   }
 
   function getTimeObjectFromMilliseconds(timeMS) {
@@ -81,6 +82,9 @@ function Timer(options) {
       hours = getHoursFromSeconds(seconds),
       minutes = getMinutesFromSeconds(seconds % (60 * 60)),
       milliseconds = timeMS % 1000;
+
+      // readjust seconds
+      seconds = seconds % 60;
 
     return {
       hours: hours,
@@ -93,6 +97,10 @@ function Timer(options) {
   function getTextFromTimeObject(timeObject) {
     var
       time = timeObject;
+
+    if (debug) {
+      console.log(time);
+    }
 
     return time.hours + ":" + time.minutes + ":" + time.seconds;
   }
