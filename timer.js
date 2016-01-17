@@ -8,26 +8,43 @@
 function Timer(options) {
   // OPTIONS
   var
-    startTime = options.startTime || {
+    duration = options.duration || {
       hours: 0,
       minutes: 2,
-      seconds: 0
+      seconds: 0,
+      milliseconds: 0,
     },
-    intervalInSeconds = options.intervalInSeconds || 1,
+    interval = options.interval || {
+      hours: 0,
+      minutes: 0,
+      seconds: 1,
+      milliseconds: 0,
+    },
     cleared = true,
-    callback = options.callback || function() {
-      console.log("timer finished");
+    intervalCallback = options.intervalCallback || function tick() {
+      if (debug) {
+        console.log("tick");
+      }
+    },
+    callback = options.callback || function callback() {
+      if (debug) {
+        console.log("timer finished");
+      }
     },
     renderSelector = options.renderSelector,
     debug = options.debug;
 
   // PRIVATES
   var
-    currentTimeSeconds = 0,
+    currentTimeMilliseconds = 0,
     timeoutReference;
 
 
   // PRIVATE HELPERS
+  function getMillisecondsFromTimeObject(timeObject) {
+    return getSecondsFromTimeObject(timeObject) * 1000 + timeObject.milliseconds;
+  }
+
   function getSecondsFromTimeObject(timeObject) {
     return timeObject.hours * 60 * 60 + timeObject.minutes * 60 + timeObject.seconds;
   }
@@ -44,11 +61,32 @@ function Timer(options) {
     var
       hours = getHoursFromSeconds(timeSeconds),
       minutes = getMinutesFromSeconds(timeSeconds % (60 * 60)),
-      seconds = timeSeconds % 60;
+      seconds = timeSeconds % 60,
+      milliseconds = 0;
     return {
       hours: hours,
       minutes: minutes,
-      seconds: seconds
+      seconds: seconds,
+      milliseconds: milliseconds
+    }
+  }
+
+  function getSecondsFromMilliseconds(time) {
+    return Math.floor(time / (1000));
+  }
+
+  function getTimeObjectFromMilliseconds(timeMS) {
+    var
+      seconds = getSecondsFromMilliseconds(timeMS),
+      hours = getHoursFromSeconds(seconds),
+      minutes = getMinutesFromSeconds(seconds % (60 * 60)),
+      milliseconds = timeMS % 1000;
+
+    return {
+      hours: hours,
+      minutes: minutes,
+      seconds: seconds,
+      milliseconds: milliseconds
     }
   }
 
@@ -59,27 +97,49 @@ function Timer(options) {
     return time.hours + ":" + time.minutes + ":" + time.seconds;
   }
 
+  function getTimeLeftInMilliseconds() {
+    return currentTimeMilliseconds;
+  }
+
+  Timer.prototype.getTimeLeft = function getTimeLeft() {
+    return getTimeObjectFromMilliseconds(currentTimeMilliseconds);
+  }
+
+  Timer.prototype.getTimeLeftAsText = function getTimeLeftAsText() {
+    return getTextFromTimeObject(this.getTimeLeft());
+  }
+
   Timer.prototype.startTimeout = function startTimeout() {
     cleared = false;
-    setTimeout(callback, interval);
+    timeoutReference = setTimeout(function timeout(){
+      callback();
+      clearInterval(timeoutReference);
+
+    }, getMillisecondsFromTimeObject(duration));
   }
 
   Timer.prototype.start = function start() {
     cleared = false;
-    currentTimeSeconds = getSecondsFromTimeObject(startTime);
+    currentTimeMilliseconds = getMillisecondsFromTimeObject(duration);
+    intervalMilliseconds = getMillisecondsFromTimeObject(interval);
 
     timeoutReference = setInterval(function tick() {
       if (debug) {
-        console.log(getTextFromTimeObject(getTimeObjectFromSeconds(currentTimeSeconds)));
+        console.log(getTextFromTimeObject(getTimeObjectFromMilliseconds(currentTimeMilliseconds)));
       }
-      currentTimeSeconds -= intervalInSeconds;
+      intervalCallback();
 
-      if (currentTimeSeconds <= 0) {
+      currentTimeMilliseconds -= intervalMilliseconds;
+
+      if (currentTimeMilliseconds <= 0) {
+        if (debug) {
+          console.log("timer end");
+        }
         cleared = true;
         clearInterval(timeoutReference);
         callback();
       }
-    }, intervalInSeconds * 1000)
+    }, intervalMilliseconds)
   };
 
   Timer.prototype.clear = function clear() {
