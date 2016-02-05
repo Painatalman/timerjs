@@ -1,3 +1,15 @@
+(function (root, factory) {
+    if (typeof define === 'function' && define.amd) {
+        // AMD
+        define(factory);
+    } else if (typeof exports === 'object') {
+        // Node, CommonJS-like
+        module.exports = factory;
+    } else {
+        // Browser globals (root is window)
+        root.returnExports = factory;
+    }
+}(this,
 /**
  * Timer object based on // http://stackoverflow.com/questions/5226578/check-if-a-timeout-has-been-cleared
  *
@@ -6,6 +18,8 @@
  * @url // http://stackoverflow.com/questions/5226578/check-if-a-timeout-has-been-cleared
  */
 function Timer(options) {
+  'use strict';
+  
   // OPTIONS
   var
     duration = options.duration || {
@@ -129,7 +143,8 @@ function Timer(options) {
   Timer.prototype.start = function start() {
     cleared = false;
     currentTimeMilliseconds = getMillisecondsFromTimeObject(duration);
-    intervalMilliseconds = getMillisecondsFromTimeObject(interval);
+    
+    var intervalMilliseconds = getMillisecondsFromTimeObject(interval);
 
     timeoutReference = setInterval(function tick() {
       if (debug) {
@@ -158,7 +173,4 @@ function Timer(options) {
   Timer.prototype.isCleared = function isCleared() {
     return cleared;
   }
-
-}
-
-module.exports = Timer;
+}))
