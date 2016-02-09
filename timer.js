@@ -19,7 +19,7 @@
  */
 function Timer(options) {
   'use strict';
-  
+
   // OPTIONS
   var
     duration = options.duration || {
@@ -40,7 +40,7 @@ function Timer(options) {
         console.log("tick");
       }
     },
-    callback = options.callback || function callback() {
+    callback = options.callback || function callbackFunction () {
       if (debug) {
         console.log("timer finished");
       }
@@ -143,7 +143,7 @@ function Timer(options) {
   Timer.prototype.start = function start() {
     cleared = false;
     currentTimeMilliseconds = getMillisecondsFromTimeObject(duration);
-    
+
     var intervalMilliseconds = getMillisecondsFromTimeObject(interval);
 
     timeoutReference = setInterval(function tick() {
